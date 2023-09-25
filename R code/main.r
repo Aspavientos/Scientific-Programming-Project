@@ -2,6 +2,7 @@
 require(ggplot2)
 require(mapview)
 require(dplyr)
+require(ggpubr)
 
 # Load data
 setwd("..")
@@ -9,7 +10,7 @@ data = read.csv("Data resource - National Mammal Atlas Project.csv", stringsAsFa
 pristine_data = data
 
 # Reformat data
-data = subset(data, select = c(-Vitality, -Country, -Basis.of.record, -Identification.verification.status))
+data = subset(data, select = c(-Vitality, -Country, -Basis.of.record, -Identification.verification.status, -Start.date.day, -Start.date.month, -Start.date.year))
 
 nulls = list(rep(NA, nrow(data))) %>%
   rep(ncol(data)) %>%
@@ -31,23 +32,55 @@ data = data[-c(which(nulls$Scientific.name),
 
 data$Start.date = as.Date(data$Start.date, format = "%d/%m/%Y")
 
-# Initial diagnostics
-year_hist = barplot(data$Start.date.year,
-                 main = "Sighting year histogram, all years",
-                 xlab = "Year")
+rm("nulls", "i")
 
-year_hist_ge2010 = hist(data$Start.date.year[data$Start.date.year > 2010],
-                 main = "Sighting year histogram, 2010 onward",
-                 xlab = "Year")
+## Initial diagnostics
+# Date histograms
+year_hist = ggplot(data, aes(x = Start.date %>% format('%Y'))) +
+  geom_histogram(stat = 'count', fill = "skyblue", colour = 'black') +
+  labs(x='Year', y='Frequency') +
+  ggtitle('Sighting year histogram', subtitle = 'All years') +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(breaks = as.character(seq(from = 1900, to = 2023, by = 10)))
 
-mtext(paste('Removed information:', as.character(round(sum(data$Start.date.year<2010)/nrow(data)*100, 2)), '%'),
-      side = 3)
+data_ge2010 = data[-which((data$Start.date %>% format("%Y") %>% as.numeric)<2010),]
+removed_ge2010 = round((nrow(data)-nrow(data_ge2010))/nrow(data)*100, 2)
 
-data = data[-which(data$Start.date.year<2010),]
+year_hist_ge2010 = ggplot(data_ge2010, aes(x = Start.date %>% format('%Y'))) +
+  geom_histogram(stat = 'count', fill = "skyblue", colour = 'black') +
+  labs(x='Year', y='Frequency') +
+  ggtitle('Sighting year histogram', subtitle = paste('2010 onward:', as.character(removed_ge2010), '% samples removed')) +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(breaks = as.character(seq(from = 1900, to = 2023, by = 5)))
 
-month_hist = hist(data$Start.date.month,
-                  main = "Sighting month histogram",
-                  xlab = "Month")
+data = data[-which((data$Start.date %>% format("%Y") %>% as.numeric)<2010),]
+
+month_hist = ggplot(data, aes(x = Start.date %>% format('%b') %>% factor(levels = format(ISOdate(2004,1:12,1),"%b")))) +
+  geom_histogram(stat = 'count', fill = 'limegreen', colour = 'black') +
+  labs(x = 'Month', y  = 'Frequency') +
+  ggtitle('Sighting month histogram') +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))+
+  scale_x_discrete(breaks = format(ISOdate(2004,1:12,1),"%b"))
+
+day_hist = ggplot(data, aes(x = Start.date %>% format('%d') %>% as.numeric)) +
+  geom_histogram(stat = 'count', fill = 'magenta', colour = 'black') +
+  labs(x = 'Day of the month', y  = 'Frequency') +
+  ggtitle('Sighting day histogram') +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))+
+  scale_x_continuous(breaks = c(1, seq(from = 5, to = 31, by = 5)))
+
+dayweek_hist = ggplot(data, aes(x = Start.date %>% format('%a') %>% factor(levels = format(ISOdate(2023,5,1:7),"%a")))) +
+  geom_histogram(stat = 'count', fill = 'pink', colour = 'black') +
+  labs(x = 'Day of the week', y  = 'Frequency') +
+  ggtitle('Sighting weekday histogram') +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))+
+  scale_x_discrete(breaks = format(ISOdate(2023,5,1:7),"%a"))
+
+date_hist = ggarrange(year_hist_ge2010, month_hist, day_hist, dayweek_hist,
+                      labels = c('Y', 'M', 'D', 'W'),
+                      ncol = 2, nrow = 2)
+
+rm(data_ge2010, removed_ge2010)
 
 # Plot sightings
 mapview(data[data$Common.name == "Roe Deer",], 
