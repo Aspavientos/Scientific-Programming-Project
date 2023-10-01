@@ -96,17 +96,35 @@ date_hist = ggarrange(year_hist_ge2010, month_hist, day_hist, dayweek_hist,
 
 rm(data_ge2010, removed_ge2010)
 
-# Other diagnostic histograms
+# Province diagnostics
+province_colors = data.frame(Provinces = levels(data$State.Province),
+                             Fills = c('#FF4F00', '#FFFFFF', '#CF142B', '#5E89C2', '#005EB8', '#00B140'),
+                             Borders = c('#FF4F00', '#CE1124', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'))
+province_colors$Provinces[1] = 'NA'
+
 province_hist = ggplot(data, aes(x= factor(State.Province))) +
-  geom_bar(fill = c('#FFFFFF', '#CF142B', '#5E89C2', '#005EB8', '#00B140', '#FF4F00'),
-           colour = c('#CE1124', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FF4F00')) +
+  geom_bar(fill = province_colors$Fills,
+           colour = province_colors$Borders) +
   stat_count(geom = "text", size = 3.5, aes(label = after_stat(count)), vjust=-0.25)+
   theme_light() +
   labs(x= 'Countries', y = 'Frequency') +
   ggtitle('Sightings by Country') +
   theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))
 
-province_hist
+normprovince_hist = ggplot(data, aes(x = Start.date %>% format('%b') %>% factor(levels = format(ISOdate(2004,1:12,1),"%b")), fill = State.Province)) +
+  geom_bar(position = 'dodge') +
+  theme_light() +
+  labs(x = 'Month', y  = 'Frequency') +
+  ggtitle('Sighting month histogram') +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.title = element_text('Countries'))+
+  scale_x_discrete(breaks = format(ISOdate(2004,1:12,1),"%b")) +
+  scale_colour_manual(values = province_colors[c('Borders','Fills')],
+                      aesthetics = c('colour', 'fill'),
+                      breaks = levels(data$State.Province),
+                      labels = province_colors$Provinces)
+
+normprovince_hist
 
 # Plot sightings
 
