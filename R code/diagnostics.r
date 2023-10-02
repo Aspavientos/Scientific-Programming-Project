@@ -3,8 +3,10 @@ require(ggplot2)
 require(mapview)
 require(dplyr)
 require(ggpubr)
+require(rstudioapi)
 
 # Load data
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 setwd("..")
 data = read.csv("Data resource - National Mammal Atlas Project.csv", stringsAsFactors = TRUE)
 pristine_data = data
@@ -68,8 +70,6 @@ year_hist_ge2010 = ggplot(data_ge2010, aes(x = Start.date %>% format('%Y'))) +
         plot.subtitle = element_text(hjust = 0.5)) +
   scale_x_discrete(breaks = as.character(seq(from = 1900, to = 2023, by = 5)))
 
-data = data[-which((data$Start.date %>% format("%Y") %>% as.numeric)<2010),]
-
 month_hist = ggplot(data, aes(x = Start.date %>% format('%b') %>% factor(levels = format(ISOdate(2004,1:12,1),"%b")))) +
   geom_bar(fill = 'limegreen', colour = 'black') +
   theme_light() +
@@ -120,6 +120,16 @@ province_hist = ggplot(data, aes(x= State.Province)) +
   scale_fill_manual(values = province_colors$Fills) +
   scale_color_manual(values = province_colors$Borders)
 
+#### MISSING
+normprovince = data.frame(matrix(nrow = length(levels(data$State.Province)), ncol = 12, dimnames = list(levels(data$State.Province), format(ISOdate(2004,1:12,1),"%b"))))
+
+for (i in nrow(normprovince)){
+  provs = which(data$State.Province==levels(data$State.Province)[i])
+  for (j in ncol(normprovince)){
+    
+  }
+}
+
 normprovince_hist = ggplot(data, aes(x = Start.date %>% format('%b') %>% factor(levels = format(ISOdate(2004,1:12,1),"%b")))) +
   geom_bar(position = 'dodge',
            aes(fill = State.Province,
@@ -136,8 +146,9 @@ normprovince_hist = ggplot(data, aes(x = Start.date %>% format('%b') %>% factor(
                      guide = 'none')
 
 normprovince_hist
+####
 
-## MISSING
+rm(i, j, province_colors)
 
 # Coordiante histograms
 latcoord_hist = ggplot(data, aes(x = Latitude..WGS84.)) +
@@ -173,11 +184,37 @@ smalluncertcoord_hist = ggplot(data_biguncert, aes(x = Coordinate.uncertainty..m
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5))
 
-data = data[-which((data$Coordinate.uncertainty..m.)>10000),]
-
 rm(data_biguncert, removed_biguncert)
 
 #
+
+# Save all plots
+plotpath = paste0(getwd(), '/Plots')
+
+customggsave = function(plot){
+  ggsave(paste0(deparse(substitute(plot)),".png"),
+         plot = plot,
+         device = 'png',
+         width = 1920,
+         height = 1080,
+         units = 'px',
+         path = plotpath)
+}
+
+customggsave(year_hist)
+customggsave(year_hist_ge2010)
+customggsave(date_hist)
+  
+customggsave(province_hist)
+
+customggsave(latlong_hist)
+customggsave(uncertcoord_hist)
+customggsave(smalluncertcoord_hist)
+
+# Remove all outlier data
+data = data[-which((data$Start.date %>% format("%Y") %>% as.numeric)<2010),]
+
+data = data[-which((data$Coordinate.uncertainty..m.)>10000),]
 
 
 # Plot sightings
