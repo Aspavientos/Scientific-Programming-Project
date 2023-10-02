@@ -1,6 +1,8 @@
+# Information
+# Diego Rodríguez Esperante: 02/10/2023
+
 # Load packages
 require(ggplot2)
-require(mapview)
 require(dplyr)
 require(ggpubr)
 require(rstudioapi)
@@ -8,7 +10,7 @@ require(rstudioapi)
 # Load data
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 setwd("..")
-data = read.csv("Data resource - National Mammal Atlas Project.csv", stringsAsFactors = TRUE)
+data = read.csv("./Data/Data resource - National Mammal Atlas Project.csv", stringsAsFactors = TRUE)
 pristine_data = data
 
 # Reformat data
@@ -189,7 +191,7 @@ rm(data_biguncert, removed_biguncert)
 #
 
 # Save all plots
-plotpath = paste0(getwd(), '/Plots')
+plotpath = './Plots'
 
 customggsave = function(plot){
   ggsave(paste0(deparse(substitute(plot)),".png"),
@@ -211,13 +213,9 @@ customggsave(latlong_hist)
 customggsave(uncertcoord_hist)
 customggsave(smalluncertcoord_hist)
 
-# Remove all outlier data
+# Remove all outlier data and save
 data = data[-which((data$Start.date %>% format("%Y") %>% as.numeric)<2010),]
 
 data = data[-which((data$Coordinate.uncertainty..m.)>10000),]
 
-
-# Plot sightings
-
-mapview(data[data$Common.name == 'Roe Deer',], xcol = "Longitude..WGS84.", ycol = "Latitude..WGS84.",
-        crs = 'WGS84' , map.types = 'OpenStreetMap.DE')
+write.csv(data, './Data/cleaned_data.csv', row.names=FALSE)
