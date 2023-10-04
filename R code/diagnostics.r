@@ -110,10 +110,6 @@ province_colors = data.frame(Provinces = levels(data$State.Province),
 province_hist = ggplot(data, aes(x= State.Province)) +
   geom_bar(aes(fill = State.Province,
                color = State.Province)) +
-  stat_count(geom = "text",
-             size = 3.5,
-             aes(label = after_stat(count)),
-             vjust=-0.25)+
   labs(x= 'Countries', y = 'Frequency') +
   ggtitle('Sightings by Country') +
   theme(plot.title = element_text(hjust = 0.5),
@@ -169,9 +165,9 @@ latlong_hist = ggarrange(latcoord_hist, longcoord_hist,
                       labels = c('Lat', 'Lon'),
                       ncol = 1, nrow = 2)
 
-uncertcoord_hist = ggplot(data, aes(x = Coordinate.uncertainty..m.)) +
+uncertcoord_hist = ggplot(data, aes(x = Coordinate.uncertainty..m.,
+                                    label = Coordinate.uncertainty..m.)) +
   geom_histogram(fill = 'cyan', color = 'black') +
-  labs(x = "Uncertainty (m)", y = "Count") +
   ggtitle("Uncertainty histogram") +
   theme(plot.title = element_text(hjust = 0.5))
 
