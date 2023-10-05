@@ -13,6 +13,9 @@ setwd("..")
 data = read.csv("./Data/Data resource - National Mammal Atlas Project.csv", stringsAsFactors = TRUE)
 pristine_data = data
 
+# Load custom functions
+source('./R code/customfunctions.R')
+
 # Reformat data
 data = subset(data, select = c(-Vitality,
                                -Country,
@@ -78,7 +81,8 @@ month_hist = ggplot(data, aes(x = Start.date %>% format('%b') %>% factor(levels 
   labs(x = 'Month', y  = 'Frequency') +
   ggtitle('Sighting month histogram') +
   theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))+
-  scale_x_discrete(breaks = format(ISOdate(2004,1:12,1),"%b"))
+  scale_x_discrete(breaks = month_colors$months,
+                   limits = month_colors$months)
 
 day_hist = ggplot(data, aes(x = Start.date %>% format('%d') %>% as.numeric)) +
   geom_bar(fill = 'magenta', colour = 'black') +
@@ -88,13 +92,14 @@ day_hist = ggplot(data, aes(x = Start.date %>% format('%d') %>% as.numeric)) +
   theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))+
   scale_x_continuous(breaks = c(1, seq(from = 5, to = 31, by = 5)))
 
-dayweek_hist = ggplot(data, aes(x = Start.date %>% format('%a') %>% factor(levels = format(ISOdate(2023,5,1:7),"%a")))) +
+dayweek_hist = ggplot(data, aes(x = Start.date %>% format('%a'))) +
   geom_bar(fill = 'pink', colour = 'black') +
   theme_light() +
   labs(x = 'Day of the week', y  = 'Frequency') +
   ggtitle('Sighting weekday histogram') +
   theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))+
-  scale_x_discrete(breaks = format(ISOdate(2023,5,1:7),"%a"))
+  scale_x_discrete(breaks = format(ISOdate(2023,5,1:7),"%a"),
+                   limits = format(ISOdate(2023,5,1:7),"%a"))
 
 date_hist = ggarrange(year_hist_ge2010, month_hist, day_hist, dayweek_hist,
                       labels = c('Y', 'M', 'D', 'W'),
@@ -103,10 +108,6 @@ date_hist = ggarrange(year_hist_ge2010, month_hist, day_hist, dayweek_hist,
 rm(data_ge2010, removed_ge2010)
 
 # Province diagnostics
-province_colors = data.frame(Provinces = levels(data$State.Province),
-                             Fills = c('#FFFFFF', '#CF142B', '#5E89C2', '#005EB8', '#00B140', '#FF4F00'),
-                             Borders = c('#CE1124', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FF4F00'))
-
 province_hist = ggplot(data, aes(x= State.Province)) +
   geom_bar(aes(fill = State.Province,
                color = State.Province)) +
@@ -128,7 +129,7 @@ for (i in nrow(normprovince)){
   }
 }
 
-normprovince_hist = ggplot(data, aes(x = Start.date %>% format('%b') %>% factor(levels = format(ISOdate(2004,1:12,1),"%b")))) +
+normprovince_hist = ggplot(data, aes(x = Start.date %>% format('%b'))) +
   geom_bar(position = 'dodge',
            aes(fill = State.Province,
                color = State.Province)) +
@@ -136,7 +137,7 @@ normprovince_hist = ggplot(data, aes(x = Start.date %>% format('%b') %>% factor(
        y  = 'Frequency') +
   ggtitle('Sighting month histogram') +
   theme(plot.title = element_text(hjust = 0.5)) +
-  scale_x_discrete(breaks = format(ISOdate(2004,1:12,1),"%b")) +
+  scale_x_discrete(limits = month_colors$months) +
   scale_fill_manual(name = 'Countries',
                     labels = province_colors$Provinces,
                     values = province_colors$Fills) +
@@ -188,16 +189,6 @@ rm(data_biguncert, removed_biguncert)
 
 # Save all plots
 plotpath = './Plots'
-
-customggsave = function(plot){
-  ggsave(paste0(deparse(substitute(plot)),".png"),
-         plot = plot,
-         device = 'png',
-         width = 1920,
-         height = 1080,
-         units = 'px',
-         path = plotpath)
-}
 
 customggsave(year_hist)
 customggsave(year_hist_ge2010)
