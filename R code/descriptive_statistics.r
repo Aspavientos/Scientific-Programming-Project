@@ -40,7 +40,7 @@ rm()
 # Mean observations per day, over the years
 daily_peryear = ggplot(data_groupings$Start.date, aes(x = Start.date %>% format('%Y'),
                                                       y = .rows %>% lapply(length) %>% as.numeric)) +
-  geom_boxplot() +
+  geom_boxplot(fill = year_colors$fills) +
   labs(x = 'Year',
        y  = 'Observations per day') +
   ggtitle('Number of daily observations, over the years') +

@@ -185,11 +185,7 @@ smalluncertcoord_hist = ggplot(data_biguncert, aes(x = Coordinate.uncertainty..m
 
 rm(data_biguncert, removed_biguncert)
 
-#
-
 # Save all plots
-plotpath = './Plots'
-
 customggsave(year_hist)
 customggsave(year_hist_ge2010)
 customggsave(date_hist)
