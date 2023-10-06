@@ -29,6 +29,7 @@ createNewGroup = function(group){
 }
 
 interestgroups = c('Scientific.name',
+                   'Order',
                    'Start.date',
                    'State.Province')
 
@@ -37,22 +38,27 @@ lapply(interestgroups, createNewGroup)
 rm()
 
 ## Boxplots
-# Mean observations per day, over the years
+# Mean observations per day
 daily_peryear = ggplot(data_groupings$Start.date, aes(x = Start.date %>% format('%Y'),
-                                                      y = .rows %>% lapply(length) %>% as.numeric)) +
-  geom_boxplot(fill = year_colors$fills) +
+                                                      y = .rows %>% sapply(length))) +
+  geom_boxplot(fill = custom_colors$year$fills) +
   labs(x = 'Year',
        y  = 'Observations per day') +
   ggtitle('Number of daily observations, over the years') +
   theme(plot.title = element_text(hjust = 0.5))
 
 daily_permonth = ggplot(data_groupings$Start.date, aes(x = Start.date %>% format('%b'),
-                                                       y = .rows %>% lapply(length) %>% as.numeric)) +
-  geom_boxplot(fill = month_colors$fills) +
-  scale_x_discrete(limits = month_colors$months) +
-  labs(x = 'Year',
+                                                       y = .rows %>% sapply(length))) +
+  geom_boxplot(fill = custom_colors$month$fills) +
+  scale_x_discrete(limits = custom_colors$month$months) +
+  labs(x = 'Month',
        y  = 'Observations per day') +
-  ggtitle('Number of daily observations, over the years') +
+  ggtitle('Number of daily observations, over the months') +
   theme(plot.title = element_text(hjust = 0.5))
 
-daily_permonth
+
+# Mean observations per order
+daily_perorder = ggplot(data_groupings$Order, aes(x = Order,
+                                                  y = .rows %>% sapply(length))) +
+  geom_boxplot()
+

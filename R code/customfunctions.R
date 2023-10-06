@@ -1,18 +1,49 @@
+Sys.setlocale("LC_TIME", "English")
+
+# lengths
+
+getlength = function(column){
+  if (class(column) == 'Date'){
+    leng = c(column %>% unique %>% length,
+             column %>% format('%a') %>% unique %>% length,
+             column %>% format('%b') %>% unique %>% length,
+             column %>% format('%d') %>% unique %>% length,
+             column %>% format('%Y') %>% unique %>% length)
+  }else{
+    leng = length(unique(column))
+  }
+  return(leng)
+}
+
+lengthlist = lapply(data, getlength)
+
+names(lengthlist$Start.date) = c('FullDate',
+                                 'Weekday',
+                                 'Month',
+                                 'MonthDay',
+                                 'Year')
 
 # Colors
 province_colors = data.frame(provinces = c('England', 'Isle of Man', 'Northern Ireland', 'Scotland', 'Wales', 'No data'),
                              fills = c('#FFFFFF', '#CF142B', '#5E89C2', '#005EB8', '#00B140', '#FF4F00'),
                              borders = c('#CE1124', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FF4F00'))
 
+
 month_colors = data.frame(months = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),
-                         fills = c('#fafa6e','#cdef72','#a4e27a','#7dd382','#58c389','#35b28e','#0ea18f','#008f8c','#007d85','#146b79','#23596a','#2a4858'))
+                         fills = colorRampPalette(c('#E4FF00', '#00E4FF', '#FF00E4'))(lengthlist$Start.date[3]))
+
+
 
 year_colors = data.frame(years = 2010:2023,
-                         fills = c('#d667ff','#ad80ff','#7295ff','#00a8ff','#00b7ff','#00c3ff','#00ceff','#00d7ff','#00deff','#00e4f2','#00e9d9','#00edc1','#22f0ab','#73f297'))
-#custom_colors = list(provinces = province_colors,
-#                     months = month_colors)
+                         fills = colorRampPalette(c('#6500FF','#FF6500', '#00FF65'))(lengthlist$Start.date[5]))
 
-# Paths
+order_colors = data.frame(orders = levels(data$Order),
+                          fills = colorRampPalette(c('#0F00FF','#FF0F00', '#00FF0F'))(lengthlist$Order))
+
+custom_colors = list(province = province_colors,
+                     month = month_colors,
+                     year = year_colors,
+                     order = order_colors)
 
 
 customggsave = function(plot){
@@ -25,3 +56,10 @@ customggsave = function(plot){
          path = './Plots')
 }
 
+# remove extraneous
+rm(province_colors,
+   month_colors,
+   year_colors,
+   order_colors)
+
+rm(lengthlist, getlength)

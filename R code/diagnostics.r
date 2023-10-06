@@ -81,8 +81,8 @@ month_hist = ggplot(data, aes(x = Start.date %>% format('%b') %>% factor(levels 
   labs(x = 'Month', y  = 'Frequency') +
   ggtitle('Sighting month histogram') +
   theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))+
-  scale_x_discrete(breaks = month_colors$months,
-                   limits = month_colors$months)
+  scale_x_discrete(breaks = custom_colors$month$months,
+                   limits = custom_colors$month$months)
 
 day_hist = ggplot(data, aes(x = Start.date %>% format('%d') %>% as.numeric)) +
   geom_bar(fill = 'magenta', colour = 'black') +
@@ -115,9 +115,9 @@ province_hist = ggplot(data, aes(x= State.Province)) +
   ggtitle('Sightings by Country') +
   theme(plot.title = element_text(hjust = 0.5),
         legend.position = 'none') +
-  scale_x_discrete(labels = province_colors$Provinces) +
-  scale_fill_manual(values = province_colors$Fills) +
-  scale_color_manual(values = province_colors$Borders)
+  scale_x_discrete(labels = custom_colors$province$Provinces) +
+  scale_fill_manual(values = custom_colors$province$Fills) +
+  scale_color_manual(values = custom_colors$province$Borders)
 
 #### MISSING
 normprovince = data.frame(matrix(nrow = length(levels(data$State.Province)), ncol = 12, dimnames = list(levels(data$State.Province), format(ISOdate(2004,1:12,1),"%b"))))
@@ -137,17 +137,17 @@ normprovince_hist = ggplot(data, aes(x = Start.date %>% format('%b'))) +
        y  = 'Frequency') +
   ggtitle('Sighting month histogram') +
   theme(plot.title = element_text(hjust = 0.5)) +
-  scale_x_discrete(limits = month_colors$months) +
+  scale_x_discrete(limits = custom_colors$month$months) +
   scale_fill_manual(name = 'Countries',
-                    labels = province_colors$Provinces,
-                    values = province_colors$Fills) +
-  scale_color_manual(values = province_colors$Borders,
+                    labels = custom_colors$province$Provinces,
+                    values = custom_colors$province$Fills) +
+  scale_color_manual(values = custom_colors$province$Borders,
                      guide = 'none')
 
 normprovince_hist
 ####
 
-rm(i, j, province_colors)
+rm(i, j, custom_colors$province)
 
 # Coordiante histograms
 latcoord_hist = ggplot(data, aes(x = Latitude..WGS84.)) +
