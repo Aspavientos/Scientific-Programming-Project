@@ -36,7 +36,7 @@ nulls = list(rep(NA, nrow(data))) %>%
 for (i in 1:ncol(data)){
   if (class(data[,i]) == 'factor'){
     data[,i] = factor(data[,i], levels = c(levels(data[,i])[-1], levels(data[,i])[1]))
-    levels(data[,i])[levels(data[,i]) == ''] = 'No data'
+    #levels(data[,i])[levels(data[,i]) == ''] = 'No data'
     nulls[,i] = data[,i] == ''
   }else{
     nulls[,i] = is.na(data[,i])
@@ -111,13 +111,17 @@ rm(data_ge2010, removed_ge2010)
 province_hist = ggplot(data, aes(x= State.Province)) +
   geom_bar(aes(fill = State.Province,
                color = State.Province)) +
+  geom_text(stat='count',
+            aes(label=..count..),
+            vjust=-0.25) +
   labs(x= 'Countries', y = 'Frequency') +
   ggtitle('Sightings by Country') +
   theme(plot.title = element_text(hjust = 0.5),
         legend.position = 'none') +
-  scale_x_discrete(labels = custom_colors$province$Provinces) +
-  scale_fill_manual(values = custom_colors$province$Fills) +
-  scale_color_manual(values = custom_colors$province$Borders)
+  scale_x_discrete(limits = custom_colors$province$provinces,
+                   labels = custom_colors$province$names) +
+  scale_fill_manual(values = custom_colors$province$fills) +
+  scale_color_manual(values = custom_colors$province$borders)
 
 #### MISSING
 normprovince = data.frame(matrix(nrow = length(levels(data$State.Province)), ncol = 12, dimnames = list(levels(data$State.Province), format(ISOdate(2004,1:12,1),"%b"))))
