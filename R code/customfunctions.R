@@ -1,3 +1,11 @@
+# Supplementary functions
+# Author: Diego Rodríguez Esperante
+# Date of creation: 05/05/2023
+# Last edited: 10/10/2023
+
+# Packages
+require(grDevices)
+
 Sys.setlocale("LC_TIME", "English")
 
 # lengths
@@ -31,15 +39,15 @@ province_colors = data.frame(provinces = c('England', 'Isle of Man', 'Northern I
 
 
 month_colors = data.frame(months = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),
-                         fills = colorRampPalette(c('#E4FF00', '#00E4FF', '#FF00E4'))(lengthlist$Start.date[3]))
+                         fills = colorRampPalette(c('#AAB34C', '#4CAAB3', '#B34CAA'))(lengthlist$Start.date[3]))
 
 
 
 year_colors = data.frame(years = 2010:2023,
-                         fills = colorRampPalette(c('#6500FF','#FF6500', '#00FF65'))(length(2010:2023)))
+                         fills = colorRampPalette(c('#8E37C8','#C88E37', '#37C88E'))(length(2010:2023)))
 
 order_colors = data.frame(orders = levels(data$Order),
-                          fills = colorRampPalette(c('#0F00FF','#FF0F00', '#00FF0F'))(lengthlist$Order))
+                          fills = colorRampPalette(c('#455ABA','#BA455A', '#5ABA45'))(lengthlist$Order))
 
 custom_colors = list(province = province_colors,
                      month = month_colors,
