@@ -1,15 +1,15 @@
 # Supplementary functions
 # Author: Diego Rodríguez Esperante
-# Date of creation: 05/05/2023
+# Date of creation: 05/10/2023
 # Last edited: 10/10/2023
 
-# Packages
+# Packages ----
 require(grDevices)
 
 Sys.setlocale("LC_TIME", "English")
 
-# lengths
-
+# Colors ----
+## Lengths ----
 getlength = function(column){
   if (class(column) == 'Date'){
     leng = c(column %>% unique %>% length,
@@ -31,7 +31,7 @@ names(lengthlist$Start.date) = c('FullDate',
                                  'MonthDay',
                                  'Year')
 
-# Colors
+## Define colors ----
 province_colors = data.frame(provinces = c('England', 'Isle of Man', 'Northern Ireland', 'Scotland', 'Wales', ''),
                              names = c('England', 'Isle of Man', 'Northern Ireland', 'Scotland', 'Wales', 'No data'),
                              fills = c('#FFFFFF', '#CF142B', '#5E89C2', '#005EB8', '#00B140', '#FF4F00'),
@@ -49,12 +49,17 @@ year_colors = data.frame(years = 2010:2023,
 order_colors = data.frame(orders = levels(data$Order),
                           fills = colorRampPalette(c('#455ABA','#BA455A', '#5ABA45'))(lengthlist$Order))
 
+family_colors = data.frame(families = levels(data$Family),
+                           fills = colorRampPalette(c('#BC6943','#43BC69', '#6943BC'))(lengthlist$Family))
+
 custom_colors = list(province = province_colors,
                      month = month_colors,
                      year = year_colors,
-                     order = order_colors)
+                     order = order_colors,
+                     family = family_colors)
 
 
+# Custom ggsave ----
 customggsave = function(plot){
   ggsave(paste0(deparse(substitute(plot)),".png"),
          plot = plot,
@@ -65,10 +70,11 @@ customggsave = function(plot){
          path = './Plots')
 }
 
-# remove extraneous
+# Remove extraneous ----
 rm(province_colors,
    month_colors,
    year_colors,
-   order_colors)
+   order_colors,
+   family_colors)
 
 rm(lengthlist, getlength)
