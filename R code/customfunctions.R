@@ -5,6 +5,8 @@
 
 # Packages ----
 require(grDevices)
+require(dplyr)
+require(reshape2)
 
 Sys.setlocale("LC_TIME", "English")
 
@@ -61,8 +63,8 @@ custom_colors = list(province = province_colors,
 
 # Groupings ----
 ## Create groupings ----
-createNewGroup = function(group){
-  new_grouping = data %>% group_by(.data[[group]])
+createNewGroup = function(group, dataset = data){
+  new_grouping = dataset %>% group_by(.data[[group]])
   # vignette('programming')
   new_grouping_attributes = (new_grouping %>% attributes)$groups
   data_groupings <<- append(data_groupings, list(groups = new_grouping_attributes))

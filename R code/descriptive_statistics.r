@@ -22,8 +22,7 @@ data$Start.date = as.Date(data$Start.date)
 ## Load custom functions ----
 source('./R code/customfunctions.R')
 
-# Function definition ----
-## Supplementary groupings ----
+## Create groupings ----
 data_groupings = list()
 
 # createNewGroup defined in customfunctions.R
@@ -34,9 +33,9 @@ interestgroups = c('Scientific.name',
                    'Start.date',
                    'State.Province')
 
-lapply(interestgroups, createNewGroup)
+t = lapply(interestgroups, createNewGroup)
 
-rm(interestgroups)
+rm(interestgroups, t)
 
 # Descriptive statistics ----
 ## Boxplots ----
@@ -62,6 +61,7 @@ daily_permonth = ggplot(data_groupings$Start.date, aes(x = Start.date %>% format
 
 ### Observations per order ----
 #### Daily observations per order ----
+# meltGroup defined in customfunctions.R
 melt_dayorder = meltGroup(data_groupings$Start.date, data$Order)
 
 med_dayorder = aggregate(value ~ variable, data = melt_dayorder, median)
