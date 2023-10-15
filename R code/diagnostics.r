@@ -17,9 +17,6 @@ setwd("..")
 data = read.csv("./Data/Data resource - National Mammal Atlas Project.csv", stringsAsFactors = TRUE)
 pristine_data = data
 
-## Load custom functions ----
-source('./R code/customfunctions.R')
-
 # Data cleaning ----
 ## Remove extra columns ----
 data = subset(data, select = c(-Vitality,
@@ -59,13 +56,15 @@ data$Start.date = as.Date(data$Start.date, format = "%d/%m/%Y")
 
 rm("nulls", "i")
 
+## Load custom functions ----
+source('./R code/customfunctions.R')
+
 # Diagnostics ----
 ## Date diagnostics ----
 ### Year histograms ----
 # All years
 year_hist = ggplot(data, aes(x = Start.date %>% format('%Y'))) +
   geom_bar(stat = 'count', fill = "skyblue", colour = 'black') +
-  theme_light() +
   labs(x='Year', y='Frequency') +
   ggtitle('Sighting year histogram', subtitle = 'All years') +
   theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) +
@@ -77,7 +76,6 @@ removed_ge2010 = round((nrow(data)-nrow(data_ge2010))/nrow(data)*100, 2)
 
 year_hist_ge2010 = ggplot(data_ge2010, aes(x = Start.date %>% format('%Y'))) +
   geom_bar(fill = "skyblue", colour = 'black') +
-  theme_light() +
   labs(x='Year', y='Frequency') +
   ggtitle('Sighting year histogram',
           subtitle = paste('2010 onward:', as.character(removed_ge2010), '% samples removed')) +
@@ -88,7 +86,6 @@ year_hist_ge2010 = ggplot(data_ge2010, aes(x = Start.date %>% format('%Y'))) +
 ### Month histograms ----
 month_hist = ggplot(data, aes(x = Start.date %>% format('%b') %>% factor(levels = format(ISOdate(2004,1:12,1),"%b")))) +
   geom_bar(fill = 'limegreen', colour = 'black') +
-  theme_light() +
   labs(x = 'Month', y  = 'Frequency') +
   ggtitle('Sighting month histogram') +
   theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))+
@@ -98,7 +95,6 @@ month_hist = ggplot(data, aes(x = Start.date %>% format('%b') %>% factor(levels 
 ### Day-of-the-month histograms ----
 day_hist = ggplot(data, aes(x = Start.date %>% format('%d') %>% as.numeric)) +
   geom_bar(fill = 'magenta', colour = 'black') +
-  theme_light() +
   labs(x = 'Day of the month', y  = 'Frequency') +
   ggtitle('Sighting day histogram') +
   theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))+
@@ -107,7 +103,6 @@ day_hist = ggplot(data, aes(x = Start.date %>% format('%d') %>% as.numeric)) +
 ### Day-of-the-week histograms ----
 dayweek_hist = ggplot(data, aes(x = Start.date %>% format('%a'))) +
   geom_bar(fill = 'pink', colour = 'black') +
-  theme_light() +
   labs(x = 'Day of the week', y  = 'Frequency') +
   ggtitle('Sighting weekday histogram') +
   theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))+
@@ -137,36 +132,6 @@ province_hist = ggplot(data, aes(x= State.Province)) +
                    labels = custom_colors$province$names) +
   scale_fill_manual(values = custom_colors$province$fills) +
   scale_color_manual(values = custom_colors$province$borders)
-
-### MISSING ----
-normprovince = data.frame(matrix(nrow = length(levels(data$State.Province)), ncol = 12, dimnames = list(levels(data$State.Province), format(ISOdate(2004,1:12,1),"%b"))))
-
-for (i in nrow(normprovince)){
-  provs = which(data$State.Province==levels(data$State.Province)[i])
-  for (j in ncol(normprovince)){
-    
-  }
-}
-
-normprovince_hist = ggplot(data, aes(x = Start.date %>% format('%b'))) +
-  geom_bar(position = 'dodge',
-           aes(fill = State.Province,
-               color = State.Province)) +
-  labs(x = 'Month',
-       y  = 'Frequency') +
-  ggtitle('Sighting month histogram') +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  scale_x_discrete(limits = custom_colors$month$months) +
-  scale_fill_manual(name = 'Countries',
-                    labels = custom_colors$province$Provinces,
-                    values = custom_colors$province$Fills) +
-  scale_color_manual(values = custom_colors$province$Borders,
-                     guide = 'none')
-
-normprovince_hist
-###
-
-rm(i, j, custom_colors$province)
 
 ## Coordiante histograms ----
 ### Latitude histogram ----
@@ -210,15 +175,16 @@ smalluncertcoord_hist = ggplot(data_biguncert, aes(x = Coordinate.uncertainty..m
 rm(data_biguncert, removed_biguncert)
 
 # Save all plots ----
-customggsave(year_hist)
-customggsave(year_hist_ge2010)
-customggsave(date_hist)
+plot_path = '/Diagnostic'
+customggsave(year_hist, save_path = plot_path)
+customggsave(year_hist_ge2010, save_path = plot_path)
+customggsave(date_hist, upscale = 1.5, save_path = plot_path)
   
-customggsave(province_hist)
+customggsave(province_hist, save_path = plot_path)
 
-customggsave(latlong_hist)
-customggsave(uncertcoord_hist)
-customggsave(smalluncertcoord_hist)
+customggsave(latlong_hist, upscale = 1.5, save_path = plot_path)
+customggsave(uncertcoord_hist, save_path = plot_path)
+customggsave(smalluncertcoord_hist, save_path = plot_path)
 
 # Remove all outlier data and save ----
 data = data[-which((data$Start.date %>% format("%Y") %>% as.numeric)<2010),]

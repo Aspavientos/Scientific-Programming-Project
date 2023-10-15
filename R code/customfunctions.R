@@ -59,15 +59,59 @@ custom_colors = list(province = province_colors,
                      family = family_colors)
 
 
+# Groupings ----
+## Create groupings ----
+createNewGroup = function(group){
+  new_grouping = data %>% group_by(.data[[group]])
+  # vignette('programming')
+  new_grouping_attributes = (new_grouping %>% attributes)$groups
+  data_groupings <<- append(data_groupings, list(groups = new_grouping_attributes))
+  names(data_groupings)[length(data_groupings)] <<- group
+}
+
+## Melt groupings ----
+meltGroup = function(grouping_list, data_column, date_format = NULL){
+  listed = lapply(grouping_list$.rows, function(x){data_column[x]})
+  
+  names(listed) = grouping_list[[1]]
+  
+  dframed = data.frame(matrix(NA,
+                              nrow = length(grouping_list[[1]]),
+                              ncol = length(levels(data_column)) + 1))
+  
+  colnames(dframed) = c(colnames(grouping_list[1]), levels(data_column))
+  
+  if (is.null(date_format)){
+    dframed[,1] = grouping_list[[1]]
+  }else{
+    dframed[,1] = grouping_list[[1]] %>% as.Date %>% format(date_format)
+  }
+  
+  for (i in 1:nrow(dframed)){
+    dframed[i,-1] = table(listed[[i]])
+  }
+  
+  melted = melt(dframed, colnames(grouping_list[1]))
+  
+  if(!is.null(date_format)){
+    melted_names = colnames(melted)
+    melted = aggregate(melted[,3], list(melted[,1], melted[,2]), FUN = sum)
+    colnames(melted) = melted_names
+  }
+  
+  return(melted)
+}
+
 # Custom ggsave ----
-customggsave = function(plot){
+customggsave = function(plot, upscale=1, save_path = ''){
+  save_path = paste0('./Plots', save_path)
   ggsave(paste0(deparse(substitute(plot)),".png"),
          plot = plot,
          device = 'png',
-         width = 1920,
-         height = 1080,
+         width = round(1920*upscale),
+         height = round(1080*upscale),
          units = 'px',
-         path = './Plots')
+         path = save_path)
 }
 
 # Remove extraneous ----

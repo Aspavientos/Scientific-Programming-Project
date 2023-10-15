@@ -2,7 +2,7 @@
 # Descriptive statistics
 # Author: Diego Rodríguez Esperante
 # Date of creation: 05/10/2023
-# Last edited: 10/10/2023
+# Last edited: 15/10/2023
 
 # Loading  ----
 ## Load packacges ----
@@ -26,13 +26,7 @@ source('./R code/customfunctions.R')
 ## Supplementary groupings ----
 data_groupings = list()
 
-createNewGroup = function(group){
-  new_grouping = data %>% group_by(.data[[group]])
-  # vignette('programming')
-  new_grouping_attributes = (new_grouping %>% attributes)$groups
-  data_groupings <<- append(data_groupings, list(groups = new_grouping_attributes))
-  names(data_groupings)[length(data_groupings)] <<- group
-}
+# createNewGroup defined in customfunctions.R
 
 interestgroups = c('Scientific.name',
                    'Order',
@@ -43,40 +37,6 @@ interestgroups = c('Scientific.name',
 lapply(interestgroups, createNewGroup)
 
 rm(interestgroups)
-
-## Melting to make ggplotable ----
-meltGroup = function(grouping_list, data_column, date_format = NULL){
-  listed = lapply(grouping_list$.rows, function(x){data_column[x]})
-  
-  names(listed) = grouping_list[[1]]
-  
-  dframed = data.frame(matrix(NA,
-                              nrow = length(grouping_list[[1]]),
-                              ncol = length(levels(data_column)) + 1))
-  
-  colnames(dframed) = c(colnames(grouping_list[1]), levels(data_column))
-  
-  if (is.null(date_format)){
-    dframed[,1] = grouping_list[[1]]
-  }else{
-    dframed[,1] = grouping_list[[1]] %>% as.Date %>% format(date_format)
-  }
-  
-  for (i in 1:nrow(dframed)){
-    dframed[i,-1] = table(listed[[i]])
-  }
-  
-  melted = melt(dframed, colnames(grouping_list[1]))
-  
-  if(!is.null(date_format)){
-    melted_names = colnames(melted)
-    melted = aggregate(melted[,3], list(melted[,1], melted[,2]), FUN = sum)
-    colnames(melted) = melted_names
-  }
-  
-  return(melted)
-}
-
 
 # Descriptive statistics ----
 ## Boxplots ----
@@ -90,6 +50,7 @@ daily_peryear = ggplot(data_groupings$Start.date, aes(x = Start.date %>% format(
   ggtitle('Number of daily observations, over the years') +
   theme(plot.title = element_text(hjust = 0.5))
 
+#### Daily observations per month ----
 daily_permonth = ggplot(data_groupings$Start.date, aes(x = Start.date %>% format('%b'),
                                                        y = .rows %>% sapply(length))) +
   geom_boxplot(fill = custom_colors$month$fills) +
@@ -207,3 +168,17 @@ monthly_perfamily = ggplot(melt_monthfamily, aes(x = variable,
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+# Save all plots ----
+plot_path = '/Descriptive'
+customggsave(daily_peryear, save_path = plot_path)
+customggsave(daily_permonth, save_path = plot_path)
+
+customggsave(daily_perorder_nobounds, upscale = 1.5, save_path = plot_path)
+customggsave(daily_perorder, upscale = 1.5, save_path = plot_path)
+customggsave(monthly_perorder, upscale = 1.5, save_path = plot_path)
+
+customggsave(daily_perfamily, upscale = 1.5, save_path = plot_path)
+customggsave(monthly_perfamily, upscale = 1.5, save_path = plot_path)
+
+rm(plot_path)
