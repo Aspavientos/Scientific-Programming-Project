@@ -33,7 +33,9 @@ interestgroups = c('Scientific.name',
                    'Start.date',
                    'State.Province')
 
-t = lapply(interestgroups, createNewGroup)
+for (i in 1:length(interestgroups)){
+  data_groupings = append(data_groupings, createNewGroup(interestgroups[i]))
+}
 
 rm(interestgroups, t)
 
@@ -78,7 +80,6 @@ daily_perorder_nobounds = ggplot(melt_dayorder, aes(x = variable,
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
 
 daily_perorder = ggplot(melt_dayorder, aes(x = variable,
                                   y = value)) +

@@ -67,8 +67,11 @@ createNewGroup = function(group, dataset = data){
   new_grouping = dataset %>% group_by(.data[[group]])
   # vignette('programming')
   new_grouping_attributes = (new_grouping %>% attributes)$groups
-  data_groupings <<- append(data_groupings, list(groups = new_grouping_attributes))
-  names(data_groupings)[length(data_groupings)] <<- group
+  
+  grouping_list = list(new_grouping_attributes)
+  names(grouping_list) = group
+  
+  return(grouping_list)
 }
 
 ## Melt groupings ----

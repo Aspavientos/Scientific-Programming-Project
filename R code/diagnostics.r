@@ -174,6 +174,19 @@ smalluncertcoord_hist = ggplot(data_biguncert, aes(x = Coordinate.uncertainty..m
 
 rm(data_biguncert, removed_biguncert)
 
+## Taxon rank histogram ----
+taxonrank_hist = ggplot(data, aes(x = Taxon.Rank)) +
+  geom_bar(fill = 'green4', color = 'black') +
+  geom_text(stat='count',
+            aes(label=..count..),
+            vjust=-0.25) +
+  labs(x = 'Taxon rank',
+       y = 'Count') +
+  ggtitle('Taxon rank histogram') +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
 # Save all plots ----
 plot_path = '/Diagnostic'
 customggsave(year_hist, save_path = plot_path)
@@ -185,6 +198,8 @@ customggsave(province_hist, save_path = plot_path)
 customggsave(latlong_hist, upscale = 1.5, save_path = plot_path)
 customggsave(uncertcoord_hist, save_path = plot_path)
 customggsave(smalluncertcoord_hist, save_path = plot_path)
+
+customggsave(taxonrank_hist, upscale = 1.5, save_path = plot_path)
 
 # Remove all outlier data and save ----
 data = data[-which((data$Start.date %>% format("%Y") %>% as.numeric)<2010),]
