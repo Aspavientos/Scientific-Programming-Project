@@ -75,7 +75,7 @@ calcLocalDiversity = function(dataset, coordinates, area = 1, date_format){
   return(local_diverdf)
 }
 
-## Localized weekly diversity ----
+### Localized weekly diversity ----
 week_list = data_species$Start.date %>% format('%Y/%W') %>% unique %>% sort
 
 all_weeks = array(rep(NA, length(week_list)), dimnames = list(week_list))
