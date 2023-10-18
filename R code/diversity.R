@@ -33,8 +33,8 @@ rm(interestgroups, t)
 
 # Mappings ----
 ## Define mapping points ----
-lat_points = seq(from = 50, to = 58, by = 1)
-lon_points = seq(from = -6, to = 2, by = 1)
+lat_points = seq(from = 50, to = 58, by = 0.1)
+lon_points = seq(from = -6, to = 2, by = 0.1)
 
 coord_pairs = expand.grid(lat_points, lon_points)
 colnames(coord_pairs) = c('Latitude', 'Longitude')
@@ -49,7 +49,7 @@ weekly_diver = diversity(weekly_reshaped[,-1])
 names(weekly_diver) = weekly_reshaped[,1]
 
 ## Localized diversity ----
-calcLocalDiversity = function(dataset, coordinates, area = 1, date_format){
+calcLocalDiversity = function(dataset, coordinates, area = 0.1, dateFormat){
   distance_vec = sqrt(abs((coordinates$Latitude - dataset$Latitude..WGS84.)^2 + (coordinates$Longitude - dataset$Longitude..WGS84.)^2))
   distance_check = distance_vec < area
   
@@ -58,7 +58,7 @@ calcLocalDiversity = function(dataset, coordinates, area = 1, date_format){
   if (nrow(local_dataset)>0){
     local_grouping = createNewGroup('Start.date', dataset = local_dataset)
     
-    local_melt = meltGroup(local_grouping$Start.date, local_dataset$Scientific.name, date_format = '%Y/%W')
+    local_melt = meltGroup(local_grouping$Start.date, local_dataset$Scientific.name, date_format = dateFormat)
     
     local_reshaped = reshape(local_melt, direction = 'wide', idvar = 'Start.date', timevar = 'variable')
     
@@ -69,8 +69,10 @@ calcLocalDiversity = function(dataset, coordinates, area = 1, date_format){
                                Diversity = local_diver)
     
   }else{
-    local_diverdf = data.frame(Dates = week_list,
-                               Diversity = rep(NA, length(week_list)))
+    date_list = dataset$Start.date %>% format(dateFormat) %>% unique %>% sort
+    
+    local_diverdf = data.frame(Dates = date_list,
+                               Diversity = rep(NA, length(date_list)))
   }
   return(local_diverdf)
 }
@@ -90,7 +92,7 @@ weekly_local_diver = array(dim = c(length(lat_points),
 for (i in 1:nrow(coord_pairs)){
   loc_diver = calcLocalDiversity(data_species,
                                  coord_pairs[i,],
-                                 date_format = '%Y/%W')
+                                 dateFormat = '%Y/%W')
   
   loc_diverdf = data.frame(loc_diver$Diversity,
                            row.names = loc_diver$Dates)
@@ -98,5 +100,48 @@ for (i in 1:nrow(coord_pairs)){
   weekly_local_diver[as.character(coord_pairs[i,1]), as.character(coord_pairs[i,2]),] = 
     merge(all_weeks, loc_diverdf, by = 'row.names', all = T)[,3]
   
+  disp(paste0('Coordinates: ', coord_pairs[i,1], ', ', coord_pairs[i,2]))
+  
   rm(loc_diver, loc_diverdf)
   }
+rm(all_weeks, week_list)
+
+weekly_local_diverdf = melt(weekly_local_diver)
+colnames(weekly_local_diverdf) = c('Latitude', 'Longitude', 'Year/Week', 'Diversity')
+
+### Localized monthly diversity ----
+month_list = data_species$Start.date %>% format('%Y/%m') %>% unique %>% sort
+
+all_months = array(rep(NA, length(month_list)), dimnames = list(month_list))
+
+monthly_local_diver = array(dim = c(length(lat_points),
+                                    length(lon_points),
+                                    length(month_list)),
+                           dimnames = list(lat_points,
+                                           lon_points,
+                                           month_list))
+
+for (i in 5744:nrow(coord_pairs)){
+  loc_diver = calcLocalDiversity(data_species,
+                                 coord_pairs[i,],
+                                 dateFormat = '%Y/%m')
+  
+  loc_diverdf = data.frame(loc_diver$Diversity,
+                           row.names = loc_diver$Dates)
+  
+  monthly_local_diver[as.character(coord_pairs[i,1]), as.character(coord_pairs[i,2]),] = 
+    merge(all_months, loc_diverdf, by = 'row.names', all = T)[,3]
+  
+  print(paste0('Coordinates: ', coord_pairs[i,1], ', ', coord_pairs[i,2]))
+  
+  rm(loc_diver, loc_diverdf)
+}
+rm(all_months, month_list)
+
+monthly_local_diverdf = melt(monthly_local_diver)
+colnames(monthly_local_diverdf) = c('Latitude', 'Longitude', 'Year/Month', 'Diversity')
+
+# Save data ----
+write.csv(weekly_local_diverdf, './Data/Weekly local diversity.csv', row.names = F)
+
+write.csv(monthly_local_diverdf, './Data/Monthly local diversity.csv', row.names = F)
