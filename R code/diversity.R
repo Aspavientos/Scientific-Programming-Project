@@ -29,8 +29,6 @@ source('./R code/customfunctions.R')
 
 data_groupings = createNewGroup('Start.date', dataset = data_species)
 
-rm(interestgroups, t)
-
 # Mappings ----
 ## Define mapping points ----
 lat_points = seq(from = 50, to = 58, by = 0.1)
@@ -40,13 +38,23 @@ coord_pairs = expand.grid(lat_points, lon_points)
 colnames(coord_pairs) = c('Latitude', 'Longitude')
 
 # Calculate diversity ----
-## Country-wide, weekly ----
+## Country-wide ----
+### Weekly diversity -----
 weekly_melt = meltGroup(data_groupings$Start.date, data_species$Scientific.name, date_format = '%Y/%W')
 
 weekly_reshaped = reshape(weekly_melt, direction = 'wide', idvar = 'Start.date', timevar = 'variable')
 
-weekly_diver = diversity(weekly_reshaped[,-1])
-names(weekly_diver) = weekly_reshaped[,1]
+weekly_diverdf = data.frame(Dates = weekly_reshaped[,1],
+                            Diversity = diversity(weekly_reshaped[,-1]))
+
+rm(weekly_melt, weekly_reshaped)
+### Monthly diversity ----
+monthly_melt = meltGroup(data_groupings$Start.date, data_species$Scientific.name, date_format = '%Y/%m')
+
+monthly_reshaped = reshape(monthly_melt, direction = 'wide', idvar = 'Start.date', timevar = 'variable')
+
+monthly_diver = diversity(monthly_reshaped[,-1])
+names(monthly_diver) = monthly_reshaped[,1]
 
 ## Localized diversity ----
 calcLocalDiversity = function(dataset, coordinates, area = 0.1, dateFormat){
@@ -141,7 +149,16 @@ rm(all_months, month_list)
 monthly_local_diverdf = melt(monthly_local_diver)
 colnames(monthly_local_diverdf) = c('Latitude', 'Longitude', 'Year/Month', 'Diversity')
 
+# Plotting ----
+weekly_diver_plot = ggplot(weekly_diverdf, aes(x = Dates, y = Diversity)) +
+  geom_point()
+
+monthly_diver_plot
+
 # Save data ----
+## Write data to csv ----
 write.csv(weekly_local_diverdf, './Data/Weekly local diversity.csv', row.names = F)
 
 write.csv(monthly_local_diverdf, './Data/Monthly local diversity.csv', row.names = F)
+
+## Save plots ----
