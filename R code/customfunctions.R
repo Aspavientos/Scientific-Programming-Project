@@ -39,11 +39,11 @@ province_colors = data.frame(provinces = c('England', 'Isle of Man', 'Northern I
                              fills = c('#FFFFFF', '#CF142B', '#5E89C2', '#005EB8', '#00B140', '#FF4F00'),
                              borders = c('#CE1124', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FF4F00'))
 
-
 month_colors = data.frame(months = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),
                          fills = colorRampPalette(c('#AAB34C', '#4CAAB3', '#B34CAA'))(lengthlist$Start.date[3]))
 
-
+season_colors = data.frame(seasons = c('Winter', 'Spring', 'Summer', 'Fall'),
+                           fills = c('lightskyblue', 'olivedrab1', 'plum', 'orange2'))
 
 year_colors = data.frame(years = 2010:2023,
                          fills = colorRampPalette(c('#8E37C8','#C88E37', '#37C88E'))(length(2010:2023)))
@@ -58,7 +58,8 @@ custom_colors = list(province = province_colors,
                      month = month_colors,
                      year = year_colors,
                      order = order_colors,
-                     family = family_colors)
+                     family = family_colors,
+                     seasons = season_colors)
 
 
 # Groupings ----
@@ -117,6 +118,22 @@ customggsave = function(plot, upscale=1, save_path = ''){
          height = round(1080*upscale),
          units = 'px',
          path = save_path)
+}
+
+# Find seasons ----
+# Credit: https://stackoverflow.com/questions/9500114/find-which-season-a-particular-date-belongs-to
+getSeason <- function(DATES, date_format = "%Y-%m-%d") {
+  WS <- as.Date("2012-12-15", format = date_format) # Winter Solstice
+  SE <- as.Date("2012-3-15",  format = date_format) # Spring Equinox
+  SS <- as.Date("2012-6-15",  format = date_format) # Summer Solstice
+  FE <- as.Date("2012-9-15",  format = date_format) # Fall Equinox
+  
+  # Convert dates from any year to 2012 dates
+  d <- as.Date(strftime(DATES, format="2012-%m-%d"))
+  
+  ifelse (d >= WS | d < SE, "Winter",
+          ifelse (d >= SE & d < SS, "Spring",
+                  ifelse (d >= SS & d < FE, "Summer", "Fall")))
 }
 
 # Remove extraneous ----

@@ -150,10 +150,40 @@ monthly_local_diverdf = melt(monthly_local_diver)
 colnames(monthly_local_diverdf) = c('Latitude', 'Longitude', 'Year/Month', 'Diversity')
 
 # Plotting ----
-weekly_diver_plot = ggplot(weekly_diverdf, aes(x = Dates, y = Diversity)) +
-  geom_point()
+seasons = getSeason(data_species$Start.date %>% sort)
 
-monthly_diver_plot
+seasons_weekly = data.frame(Weeks = data_species$Start.date %>% format('%Y/%W') %>% sort,
+                            Season = seasons)
+
+seasons_weekly = distinct(seasons_weekly, Weeks, Season)
+
+seasons_weekly = seasons_weekly[!duplicated(seasons_weekly$Weeks),]
+
+weekly_diverdf$Season = seasons_weekly$Season
+
+weekly_diver_plot = ggplot(weekly_diverdf, aes(x = Dates, y = Diversity)) +
+  geom_point(aes(color = Season)) +
+  labs(x = 'Week',
+       y = 'Diversity') +
+  scale_color_manual(limits = custom_colors$seasons$seasons,
+                     values = custom_colors$seasons$fills) +
+  scale_x_discrete(breaks = ISOdate(2010:2023, 1, 1) %>% format('%Y/%W')) +
+  ggtitle('Weekly diversity measures across the years') +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+season_weekly_diver_violin = ggplot(weekly_diverdf, aes(x = Season, y = Diversity)) +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75),
+              trim = FALSE,
+              aes(fill = Season)) +
+  scale_x_discrete(limits = custom_colors$seasons$seasons) +
+  scale_fill_manual(limits = custom_colors$seasons$seasons,
+                    values = custom_colors$seasons$fills,
+                    guide = 'none') +
+  ggtitle('Weekly diversity measures across seasons') +
+  theme(plot.title = element_text(hjust = 0.5))
+
+weekly_diver_plot
 
 # Save data ----
 ## Write data to csv ----
