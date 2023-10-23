@@ -10,12 +10,17 @@ require(ggplot2)
 require(dplyr)
 require(ggpubr)
 require(rstudioapi)
+require(maps)
 
 ## Load data ----
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 setwd("..")
 data = read.csv("./Data/Data resource - National Mammal Atlas Project.csv", stringsAsFactors = TRUE)
 pristine_data = data
+
+worldmap = map_data('world')
+
+worldmap = worldmap[worldmap$region == 'UK',]
 
 # Data cleaning ----
 ## Remove extra columns ----
@@ -187,6 +192,26 @@ taxonrank_hist = ggplot(data, aes(x = Taxon.Rank)) +
         plot.subtitle = element_text(hjust = 0.5),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
+# Map visualizations ----
+mapping_plot = ggplot(data, aes(x = Longitude..WGS84., y = Latitude..WGS84.)) +
+  geom_point(alpha = 0.01,
+             size = 0.25) +
+  geom_polygon(data = worldmap, 
+               aes(x = long, y = lat, 
+                   group = group), 
+               alpha = 0.5,
+               fill = 'gray90', 
+               color = 'black') +
+  stat_density2d(aes(fill = after_stat(level)), alpha = 0.75,
+                 geom = 'polygon', data = data) +
+  ggtitle('Density mapping of sightings') +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = 'none') +
+  labs(x = "Longitude", y = "Latitude") + 
+  coord_fixed(ratio = 1.3, 
+              xlim = c(-10,2), 
+              ylim = c(50, 59))
+
 # Save all plots ----
 plot_path = '/Diagnostic'
 customggsave(year_hist, save_path = plot_path)
@@ -200,6 +225,8 @@ customggsave(uncertcoord_hist, save_path = plot_path)
 customggsave(smalluncertcoord_hist, save_path = plot_path)
 
 customggsave(taxonrank_hist, upscale = 1.5, save_path = plot_path)
+
+customggsave(mapping_plot, upscale = 1.5, save_path = plot_path)
 
 # Remove all outlier data and save ----
 data = data[-which((data$Start.date %>% format("%Y") %>% as.numeric)<2010),]

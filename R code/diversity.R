@@ -1,8 +1,8 @@
 # Information ----
-# Descriptive statistics
+# Diversity
 # Author: Diego Rodríguez Esperante
 # Date of creation: 15/10/2023
-# Last edited: 15/10/2023
+# Last edited: 23/10/2023
 
 # Loading ----
 ## Loading packages ----
@@ -31,8 +31,8 @@ data_groupings = createNewGroup('Start.date', dataset = data_species)
 
 # Mappings ----
 ## Define mapping points ----
-lat_points = seq(from = 50, to = 58, by = 0.1)
-lon_points = seq(from = -6, to = 2, by = 0.1)
+lat_points = seq(from = 50, to = 59, by = 0.1)
+lon_points = seq(from = -8, to = 2, by = 0.1)
 
 coord_pairs = expand.grid(lat_points, lon_points)
 colnames(coord_pairs) = c('Latitude', 'Longitude')
@@ -53,8 +53,10 @@ monthly_melt = meltGroup(data_groupings$Start.date, data_species$Scientific.name
 
 monthly_reshaped = reshape(monthly_melt, direction = 'wide', idvar = 'Start.date', timevar = 'variable')
 
-monthly_diver = diversity(monthly_reshaped[,-1])
-names(monthly_diver) = monthly_reshaped[,1]
+monthly_diverdf = data.frame(Dates = monthly_reshaped[,1],
+                             Diversity = diversity(monthly_reshaped[,-1]))
+
+rm(monthly_melt, monthly_reshaped)
 
 ## Localized diversity ----
 calcLocalDiversity = function(dataset, coordinates, area = 0.1, dateFormat){
@@ -150,6 +152,7 @@ monthly_local_diverdf = melt(monthly_local_diver)
 colnames(monthly_local_diverdf) = c('Latitude', 'Longitude', 'Year/Month', 'Diversity')
 
 # Plotting ----
+## Weekly plots ----
 seasons = getSeason(data_species$Start.date %>% sort)
 
 seasons_weekly = data.frame(Weeks = data_species$Start.date %>% format('%Y/%W') %>% sort,
@@ -167,10 +170,10 @@ weekly_diver_plot = ggplot(weekly_diverdf, aes(x = Dates, y = Diversity)) +
        y = 'Diversity') +
   scale_color_manual(limits = custom_colors$seasons$seasons,
                      values = custom_colors$seasons$fills) +
-  scale_x_discrete(breaks = ISOdate(2010:2023, 1, 1) %>% format('%Y/%W')) +
+  scale_x_discrete(breaks = ISOdate(2010:2023, 1, 1) %>% format('%Y/%W'),
+                   labels = (2010:2023)) +
   ggtitle('Weekly diversity measures across the years') +
-  theme(plot.title = element_text(hjust = 0.5),
-        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  theme(plot.title = element_text(hjust = 0.5))
 
 season_weekly_diver_violin = ggplot(weekly_diverdf, aes(x = Season, y = Diversity)) +
   geom_violin(draw_quantiles = c(0.25, 0.5, 0.75),
@@ -183,12 +186,50 @@ season_weekly_diver_violin = ggplot(weekly_diverdf, aes(x = Season, y = Diversit
   ggtitle('Weekly diversity measures across seasons') +
   theme(plot.title = element_text(hjust = 0.5))
 
-weekly_diver_plot
+## Monthly plots ----
+seasons_monthly = data.frame(Months = data_species$Start.date %>% format('%Y/%m') %>% sort,
+                            Season = seasons)
+
+seasons_monthly = distinct(seasons_monthly, Months, Season)
+
+seasons_monthly = seasons_monthly[!duplicated(seasons_monthly$Months),]
+
+monthly_diverdf$Season = seasons_monthly$Season
+
+monthly_diver_plot = ggplot(monthly_diverdf, aes(x = Dates, y = Diversity)) +
+  geom_point(aes(color = Season)) +
+  labs(x = 'Month',
+       y = 'Diversity') +
+  scale_color_manual(limits = custom_colors$seasons$seasons,
+                     values = custom_colors$seasons$fills) +
+  scale_x_discrete(breaks = ISOdate(2010:2023, 1, 1) %>% format('%Y/%m'),
+                   labels = 2010:2023) +
+  ggtitle('Monthly diversity measures across the years') +
+  theme(plot.title = element_text(hjust = 0.5))
+
+season_monthly_diver_violin = ggplot(monthly_diverdf, aes(x = Season, y = Diversity)) +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75),
+              trim = FALSE,
+              aes(fill = Season)) +
+  scale_x_discrete(limits = custom_colors$seasons$seasons) +
+  scale_fill_manual(limits = custom_colors$seasons$seasons,
+                    values = custom_colors$seasons$fills,
+                    guide = 'none') +
+  ggtitle('Monthly diversity measures across seasons') +
+  theme(plot.title = element_text(hjust = 0.5))
 
 # Save data ----
 ## Write data to csv ----
+write.csv(weekly_diverdf, './Data/Weekly diversity.csv', row.names = F)
 write.csv(weekly_local_diverdf, './Data/Weekly local diversity.csv', row.names = F)
 
+write.csv(monthly_diverdf, './Data/Monthly diversity.csv', row.names = F)
 write.csv(monthly_local_diverdf, './Data/Monthly local diversity.csv', row.names = F)
 
 ## Save plots ----
+plot_path = '/Diversity'
+customggsave(weekly_diver_plot, upscale = 1.5, save_path = plot_path)
+customggsave(season_weekly_diver_violin, upscale = 1.5, save_path = plot_path)
+
+customggsave(monthly_diver_plot, upscale = 1.5, save_path = plot_path)
+customggsave(season_monthly_diver_violin, upscale = 1.5, save_path = plot_path)

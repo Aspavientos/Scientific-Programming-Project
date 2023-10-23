@@ -109,7 +109,7 @@ meltGroup = function(grouping_list, data_column, date_format = NULL){
 }
 
 # Custom ggsave ----
-customggsave = function(plot, upscale=1, save_path = ''){
+customggsave = function(plot, upscale=1.5, save_path = ''){
   save_path = paste0('./Plots', save_path)
   ggsave(paste0(deparse(substitute(plot)),".png"),
          plot = plot,
