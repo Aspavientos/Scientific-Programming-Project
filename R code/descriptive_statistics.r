@@ -37,7 +37,7 @@ for (i in 1:length(interestgroups)){
   data_groupings = append(data_groupings, createNewGroup(interestgroups[i]))
 }
 
-rm(interestgroups, t)
+rm(interestgroups)
 
 # Descriptive statistics ----
 ## Boxplots ----
