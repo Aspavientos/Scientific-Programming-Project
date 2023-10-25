@@ -43,7 +43,7 @@ month_colors = data.frame(months = c("Jan","Feb","Mar","Apr","May","Jun","Jul","
                          fills = colorRampPalette(c('#AAB34C', '#4CAAB3', '#B34CAA'))(lengthlist$Start.date[3]))
 
 season_colors = data.frame(seasons = c('Winter', 'Spring', 'Summer', 'Fall'),
-                           fills = c('lightskyblue', 'olivedrab1', 'plum', 'orange2'))
+                           fills = c('lightskyblue', 'olivedrab', 'plum', 'orange2'))
 
 year_colors = data.frame(years = 2010:2023,
                          fills = colorRampPalette(c('#8E37C8','#C88E37', '#37C88E'))(length(2010:2023)))
