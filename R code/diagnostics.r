@@ -127,7 +127,7 @@ province_hist = ggplot(data, aes(x= State.Province)) +
   geom_bar(aes(fill = State.Province,
                color = State.Province)) +
   geom_text(stat='count',
-            aes(label=..count..),
+            aes(label=after_stat(count)),
             vjust=-0.25) +
   labs(x= 'Countries', y = 'Frequency') +
   ggtitle('Sightings by Country') +
@@ -163,6 +163,7 @@ uncertcoord_hist = ggplot(data, aes(x = Coordinate.uncertainty..m.,
                                     label = Coordinate.uncertainty..m.)) +
   geom_histogram(fill = 'cyan', color = 'black') +
   ggtitle("Uncertainty histogram") +
+  labs(x = "Uncertainty (m)", y = "Count") +
   theme(plot.title = element_text(hjust = 0.5))
 
 # Remove large uncertainties

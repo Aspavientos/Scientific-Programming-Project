@@ -113,9 +113,9 @@ weekly_diver_plot = ggplot(weekly_diverdf, aes(x = Dates, y = Diversity)) +
 
 season_weekly_diver_violin = ggplot(weekly_diverdf, aes(x = Season, y = Diversity)) +
   geom_violin(draw_quantiles = c(0.25, 0.5, 0.75),
-              trim = FALSE,
               aes(fill = Season)) +
   scale_x_discrete(limits = custom_colors$seasons$seasons) +
+  scale_y_continuous(limits = c(2, 3.5)) +
   scale_fill_manual(limits = custom_colors$seasons$seasons,
                     values = custom_colors$seasons$fills,
                     guide = 'none') +
@@ -145,9 +145,9 @@ monthly_diver_plot = ggplot(monthly_diverdf, aes(x = Dates, y = Diversity)) +
 
 season_monthly_diver_violin = ggplot(monthly_diverdf, aes(x = Season, y = Diversity)) +
   geom_violin(draw_quantiles = c(0.25, 0.5, 0.75),
-              trim = FALSE,
               aes(fill = Season)) +
   scale_x_discrete(limits = custom_colors$seasons$seasons) +
+  scale_y_continuous(limits = c(2, 3.5)) +
   scale_fill_manual(limits = custom_colors$seasons$seasons,
                     values = custom_colors$seasons$fills,
                     guide = 'none') +
@@ -167,3 +167,5 @@ customggsave(season_weekly_diver_violin, upscale = 1.5, save_path = plot_path)
 
 customggsave(monthly_diver_plot, upscale = 1.5, save_path = plot_path)
 customggsave(season_monthly_diver_violin, upscale = 1.5, save_path = plot_path)
+
+rm(plot_path)

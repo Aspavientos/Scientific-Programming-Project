@@ -43,23 +43,75 @@ rm(interestgroups)
 ## Boxplots ----
 ### Observations per date ----
 #### Daily observations per year ----
-daily_peryear = ggplot(data_groupings$Start.date, aes(x = Start.date %>% format('%Y'),
-                                                      y = .rows %>% sapply(length))) +
+daily_peryear_nobounds = ggplot(data_groupings$Start.date, aes(x = Start.date %>% format('%Y'),
+                                                               y = .rows %>% sapply(length))) +
   geom_boxplot(fill = custom_colors$year$fills) +
   labs(x = 'Year',
        y  = 'Observations per day') +
-  ggtitle('Number of daily observations, over the years') +
-  theme(plot.title = element_text(hjust = 0.5))
+  ggtitle('Number of daily observations, over the years',
+          subtitle = paste0('All observations')) +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+
+melt_yeardaily = data.frame(Start.date = data_groupings$Start.date$Start.date %>% format('%Y'),
+                             Count = data_groupings$Start.date$.rows %>% sapply(length))
+
+med_yeardaily = aggregate(Count ~ Start.date, data = melt_yeardaily, median)
+med_yeardaily$Start.date = ISOdate(2010:2023, 1,1)
+
+daily_peryear = ggplot(data_groupings$Start.date, aes(x = Start.date %>% format('%Y'),
+                                                      y = .rows %>% sapply(length))) +
+  geom_boxplot(fill = custom_colors$year$fills) +
+  geom_label(data = med_yeardaily,
+             aes(label = Count, y = Count)) +
+  scale_y_continuous(limits = c(0,200)) +
+  labs(x = 'Year',
+       y  = 'Observations per day') +
+  ggtitle('Number of daily observations, over the years',
+          subtitle = paste0('Observations out of bounds: ',
+                            sum((data_groupings$Start.date$.rows %>% sapply(length))>200), ' (',
+                            signif(sum((data_groupings$Start.date$.rows %>% sapply(length))>200)/sum(data_groupings$Start.date$.rows %>% sapply(length)), 2), '%)')) +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+
+rm(melt_yeardaily, med_yeardaily)
 
 #### Daily observations per month ----
-daily_permonth = ggplot(data_groupings$Start.date, aes(x = Start.date %>% format('%b'),
+daily_permonth_nobounds = ggplot(data_groupings$Start.date, aes(x = Start.date %>% format('%b'),
                                                        y = .rows %>% sapply(length))) +
   geom_boxplot(fill = custom_colors$month$fills) +
   scale_x_discrete(limits = custom_colors$month$months) +
   labs(x = 'Month',
        y  = 'Observations per day') +
-  ggtitle('Number of daily observations, over the months') +
-  theme(plot.title = element_text(hjust = 0.5))
+  ggtitle('Number of daily observations, over the months',
+          subtitle = paste0('All observations')) +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+
+melt_monthdaily = data.frame(Start.date = data_groupings$Start.date$Start.date %>% format('%b'),
+                             Count = data_groupings$Start.date$.rows %>% sapply(length))
+
+med_monthdaily = aggregate(Count ~ Start.date, data = melt_monthdaily, median)
+med_monthdaily = med_monthdaily[match(custom_colors$month$months, med_monthdaily$Start.date),]
+med_monthdaily$Start.date = ISOdate(2010, 1:12,1)
+
+daily_permonth = ggplot(data_groupings$Start.date, aes(x = Start.date %>% format('%b'),
+                                                       y = .rows %>% sapply(length))) +
+  geom_boxplot(fill = custom_colors$month$fills) +
+  geom_label(data = med_monthdaily,
+             aes(label = Count, y = Count)) +
+  scale_x_discrete(limits = custom_colors$month$months) +
+  scale_y_continuous(limits = c(0,200)) +
+  labs(x = 'Month',
+       y  = 'Observations per day') +
+  ggtitle('Number of daily observations, over the months',
+          subtitle = paste0('Observations out of bounds: ',
+                            sum((data_groupings$Start.date$.rows %>% sapply(length))>200), ' (',
+                            signif(sum((data_groupings$Start.date$.rows %>% sapply(length))>200)/sum(data_groupings$Start.date$.rows %>% sapply(length)), 2), '%)')) +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+
+rm(melt_monthdaily, med_monthdaily)
 
 ### Observations per order ----
 #### Daily observations per order ----
@@ -98,6 +150,32 @@ daily_perorder = ggplot(melt_dayorder, aes(x = variable,
         plot.subtitle = element_text(hjust = 0.5),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
+rm(melt_dayorder, med_dayorder)
+
+#### Weekly observations per order ----
+melt_weekorder = meltGroup(data_groupings$Start.date, data$Order, date_format = '%W')
+
+med_weekorder = aggregate(value ~ variable, data = melt_weekorder, median)
+med_weekorder$value = round(med_weekorder$value, 2)
+
+weekly_perorder = ggplot(melt_weekorder, aes(x = variable,
+                                               y = value)) +
+  geom_boxplot(fill = custom_colors$order$fills) +
+  geom_label(data = med_weekorder,
+             aes(label = value, y = value)) +
+  labs(x = 'Order',
+       y = 'Weekly sightings') +
+  ggtitle('Number of weekly observations per Order',
+          subtitle = paste0('Observations out of bounds: ',
+                            sum(melt_weekorder$value>7000), ' (',
+                            signif(sum(melt_weekorder$value>7000)/length(melt_weekorder$value), 2), '%)')) +
+  scale_x_discrete(limits = custom_colors$order$orders) +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+rm(melt_weekorder, med_weekorder)
+
 #### Monthly observations per order ----
 melt_monthorder = meltGroup(data_groupings$Start.date, data$Order, date_format = '%b')
 
@@ -120,6 +198,8 @@ monthly_perorder = ggplot(melt_monthorder, aes(x = variable,
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+rm(melt_monthorder, med_monthorder)
 
 ### Observations per family ----
 #### Daily observations per family ----
@@ -146,6 +226,33 @@ daily_perfamily = ggplot(melt_dayfamily, aes(x = variable,
         plot.subtitle = element_text(hjust = 0.5),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
+rm(melt_dayfamily, med_dayfamily)
+
+#### Weekly observations per family ----
+melt_weekfamily = meltGroup(data_groupings$Start.date, data$Family, date_format = '%W')
+
+med_weekfamily = aggregate(value ~ variable, data = melt_weekfamily, median)
+med_weekfamily$value = round(med_weekfamily$value, 2)
+
+weekly_perfamily = ggplot(melt_weekfamily, aes(x = variable,
+                                                 y = value)) +
+  geom_boxplot(fill = custom_colors$family$fills) +
+  geom_label(data = med_weekfamily,
+             aes(label = value, y = value),
+             size = 3) +
+  labs(x = 'Family',
+       y = 'Weekly sightings') +
+  ggtitle('Number of weekly observations per Family',
+          subtitle = paste0('Observations out of bounds: ',
+                            sum(melt_weekfamily$value>7000), ' (',
+                            signif(sum(melt_weekfamily$value>7000)/length(melt_weekfamily$value), 2), '%)')) +
+  scale_x_discrete(limits = custom_colors$family$families) +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+rm(melt_weekfamily, med_weekfamily)
+
 #### Monthly observations per family ----
 melt_monthfamily = meltGroup(data_groupings$Start.date, data$Family, date_format = '%b')
 
@@ -170,16 +277,23 @@ monthly_perfamily = ggplot(melt_monthfamily, aes(x = variable,
         plot.subtitle = element_text(hjust = 0.5),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
+rm(melt_monthfamily, med_monthfamily)
+
 # Save all plots ----
 plot_path = '/Descriptive'
+customggsave(daily_peryear_nobounds, save_path = plot_path)
 customggsave(daily_peryear, save_path = plot_path)
+
+customggsave(daily_permonth_nobounds, save_path = plot_path)
 customggsave(daily_permonth, save_path = plot_path)
 
 customggsave(daily_perorder_nobounds, upscale = 1.5, save_path = plot_path)
 customggsave(daily_perorder, upscale = 1.5, save_path = plot_path)
+customggsave(weekly_perorder, upscale = 1.5, save_path = plot_path)
 customggsave(monthly_perorder, upscale = 1.5, save_path = plot_path)
 
 customggsave(daily_perfamily, upscale = 1.5, save_path = plot_path)
+customggsave(weekly_perorder, upscale = 1.5, save_path = plot_path)
 customggsave(monthly_perfamily, upscale = 1.5, save_path = plot_path)
 
 rm(plot_path)
