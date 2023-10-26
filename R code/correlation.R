@@ -43,6 +43,8 @@ order_cor_melt = weekly_data[,-c(1:4, 12)] %>% cor(method = 'spearman') %>% melt
 
 order_cor_melt_subset = weekly_data[,-c(1:4, 7, 9, 12:14)] %>% cor(method = 'spearman') %>% melt
 
+orderdiver_cor_melt = weekly_data[,-c(1, 3:4, 7, 9, 12:14)] %>% cor(method = 'spearman') %>% melt
+
 # Plots ----
 ## Illustrative plots ----
 weekly_countsNdiversity = ggplot(weekly_data, aes(fill = Season, color = Season)) +
@@ -155,7 +157,7 @@ order_corheatmap = ggplot(order_cor_melt, aes(x=Var1, y=Var2, fill=value)) +
   geom_tile() +
   scale_x_discrete(position = 'top') +
   scale_y_discrete(limits = rev) +
-  scale_fill_continuous(name = 'Spearman \nCorr.', type = 'viridis') +
+  scale_fill_continuous(name = 'Spearman \nCorr.', type = 'viridis', limits = c(0,1)) +
   labs(y = 'Order') +
   ggtitle('Correlation of weekly sightings across orders') +
   theme(plot.title = element_text(hjust = 0.5),
@@ -168,7 +170,20 @@ order_corheatmap_subset = ggplot(order_cor_melt_subset, aes(x=Var1, y=Var2, fill
   geom_tile() +
   scale_x_discrete(position = 'top') +
   scale_y_discrete(limits = rev) +
-  scale_fill_continuous(name = 'Spearman \nCorr.', type = 'viridis') +
+  scale_fill_continuous(name = 'Spearman \nCorr.', type = 'viridis', limits = c(0,1)) +
+  labs(y = 'Order') +
+  ggtitle('Correlation of weekly sightings across orders') +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        panel.background = element_rect(fill = 'white'),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0))
+
+orderdiver_corheatmap = ggplot(orderdiver_cor_melt, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile() +
+  scale_x_discrete(position = 'top') +
+  scale_y_discrete(limits = rev) +
+  scale_fill_continuous(name = 'Spearman \nCorr.', type = 'viridis', limits = c(0,1)) +
   labs(y = 'Order') +
   ggtitle('Correlation of weekly sightings across orders') +
   theme(plot.title = element_text(hjust = 0.5),
@@ -208,6 +223,8 @@ customggsave(weekly_countsVlogdiversity_end, save_path = plot_path)
 customggsave(weekly_countsVlogdiversity_endnolast, save_path = plot_path)
 
 customggsave(order_corheatmap, save_path = plot_path)
+customggsave(order_corheatmap_subset, save_path = plot_path)
+customggsave(orderdiver_corheatmap, save_path = plot_path)
 
 customggsave(dendogram_hclust_order_cor, save_path = plot_path)
 customggsave(dendogram_hclust_order_cor_subset, save_path = plot_path)

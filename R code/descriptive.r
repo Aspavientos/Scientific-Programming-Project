@@ -216,7 +216,7 @@ daily_perfamily = ggplot(melt_dayfamily, aes(x = variable,
              size = 3) +
   labs(x = 'Order',
        y = 'Daily sightings') +
-  ggtitle('Number of daily observations per Order',
+  ggtitle('Number of daily observations per Family',
           subtitle = paste0('Observations out of bounds: ',
                             sum(melt_dayfamily$value>50), ' (',
                             signif(sum(melt_dayfamily$value>50)/sum(melt_dayfamily$value), 2), '%)')) +

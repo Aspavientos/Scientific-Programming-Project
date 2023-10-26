@@ -69,50 +69,55 @@ source('./R code/customfunctions.R')
 ### Year histograms ----
 # All years
 year_hist = ggplot(data, aes(x = Start.date %>% format('%Y'))) +
-  geom_bar(stat = 'count', fill = "skyblue", colour = 'black') +
+  geom_bar(stat = 'count', aes(fill = after_stat(count)), colour = 'black') +
   labs(x='Year', y='Frequency') +
+  scale_x_discrete(breaks = as.character(seq(from = 1900, to = 2023, by = 10))) +
+  scale_fill_continuous(low = 'deepskyblue4', high = 'deepskyblue', guide = 'none') +
   ggtitle('Sighting year histogram', subtitle = 'All years') +
-  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) +
-  scale_x_discrete(breaks = as.character(seq(from = 1900, to = 2023, by = 10)))
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))
 
 # Only after 2010
 data_ge2010 = data[-which((data$Start.date %>% format("%Y") %>% as.numeric)<2010),]
 removed_ge2010 = round((nrow(data)-nrow(data_ge2010))/nrow(data)*100, 2)
 
 year_hist_ge2010 = ggplot(data_ge2010, aes(x = Start.date %>% format('%Y'))) +
-  geom_bar(fill = "skyblue", colour = 'black') +
+  geom_bar(stat = 'count', aes(fill = after_stat(count)), colour = 'black') +
+  scale_x_discrete(breaks = as.character(seq(from = 1900, to = 2023, by = 5))) +
+  scale_fill_continuous(low = 'deepskyblue4', high = 'deepskyblue', guide = 'none') +
   labs(x='Year', y='Frequency') +
   ggtitle('Sighting year histogram',
           subtitle = paste('2010 onward:', as.character(removed_ge2010), '% samples removed')) +
   theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5)) +
-  scale_x_discrete(breaks = as.character(seq(from = 1900, to = 2023, by = 5)))
+        plot.subtitle = element_text(hjust = 0.5))
 
 ### Month histograms ----
 month_hist = ggplot(data, aes(x = Start.date %>% format('%b') %>% factor(levels = format(ISOdate(2004,1:12,1),"%b")))) +
-  geom_bar(fill = 'limegreen', colour = 'black') +
+  geom_bar(stat = 'count', aes(fill = after_stat(count)), colour = 'black') +
+  scale_x_discrete(breaks = custom_colors$month$months,
+                   limits = custom_colors$month$months) +
+  scale_fill_continuous(low = 'palegreen4', high = 'palegreen', guide = 'none') +
   labs(x = 'Month', y  = 'Frequency') +
   ggtitle('Sighting month histogram') +
-  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))+
-  scale_x_discrete(breaks = custom_colors$month$months,
-                   limits = custom_colors$month$months)
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))
 
 ### Day-of-the-month histograms ----
 day_hist = ggplot(data, aes(x = Start.date %>% format('%d') %>% as.numeric)) +
-  geom_bar(fill = 'magenta', colour = 'black') +
+  geom_bar(stat = 'count', aes(fill = after_stat(count)), colour = 'black') +
+  scale_x_continuous(breaks = c(1, seq(from = 5, to = 31, by = 5))) +
+  scale_fill_continuous(low = 'magenta3', high = 'magenta', guide = 'none') +
   labs(x = 'Day of the month', y  = 'Frequency') +
   ggtitle('Sighting day histogram') +
-  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))+
-  scale_x_continuous(breaks = c(1, seq(from = 5, to = 31, by = 5)))
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))
 
 ### Day-of-the-week histograms ----
 dayweek_hist = ggplot(data, aes(x = Start.date %>% format('%a'))) +
-  geom_bar(fill = 'pink', colour = 'black') +
+  geom_bar(stat = 'count', aes(fill = after_stat(count)), colour = 'black') +
+  scale_x_discrete(breaks = format(ISOdate(2023,5,1:7),"%a"),
+                   limits = format(ISOdate(2023,5,1:7),"%a")) +
+  scale_fill_continuous(low = 'pink2', high = 'pink', guide = 'none') +
   labs(x = 'Day of the week', y  = 'Frequency') +
   ggtitle('Sighting weekday histogram') +
-  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))+
-  scale_x_discrete(breaks = format(ISOdate(2023,5,1:7),"%a"),
-                   limits = format(ISOdate(2023,5,1:7),"%a"))
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))
 
 ### Date histograms arranged ----
 date_hist = ggarrange(year_hist_ge2010, month_hist, day_hist, dayweek_hist,
@@ -129,26 +134,28 @@ province_hist = ggplot(data, aes(x= State.Province)) +
   geom_text(stat='count',
             aes(label=after_stat(count)),
             vjust=-0.25) +
-  labs(x= 'Countries', y = 'Frequency') +
-  ggtitle('Sightings by Country') +
-  theme(plot.title = element_text(hjust = 0.5),
-        legend.position = 'none') +
   scale_x_discrete(limits = custom_colors$province$provinces,
                    labels = custom_colors$province$names) +
   scale_fill_manual(values = custom_colors$province$fills) +
-  scale_color_manual(values = custom_colors$province$borders)
+  scale_color_manual(values = custom_colors$province$borders)+ 
+  labs(x= 'Countries', y = 'Frequency') +
+  ggtitle('Sightings by Country') +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = 'none')
 
 ## Coordiante histograms ----
 ### Latitude histogram ----
 latcoord_hist = ggplot(data, aes(x = Latitude..WGS84.)) +
-  geom_histogram(fill = 'blue', color = 'black') +
+  geom_histogram(aes(fill = after_stat(count)), color = 'black', binwidth = 1) +
+  scale_fill_continuous(low = 'royalblue4', high = 'royalblue', guide = 'none') +
   labs(x = "Latitude", y = "Count") +
   ggtitle("Latitude histogram") +
   theme(plot.title = element_text(hjust = 0.5))
 
 ### Longitude histogram ----
 longcoord_hist = ggplot(data, aes(x = Longitude..WGS84.)) +
-  geom_histogram(fill = 'red', color = 'black') +
+  geom_histogram(aes(fill = after_stat(count)), color = 'black', binwidth = 1) +
+  scale_fill_continuous(low = 'red4', high = 'red', guide = 'none') +
   labs(x = "Longitude", y = "Count") +
   ggtitle("Longitude histogram") +
   theme(plot.title = element_text(hjust = 0.5))
@@ -159,9 +166,10 @@ latlong_hist = ggarrange(latcoord_hist, longcoord_hist,
                       ncol = 1, nrow = 2)
 
 ### Coordinate uncertainty histogram ----
-uncertcoord_hist = ggplot(data, aes(x = Coordinate.uncertainty..m.,
-                                    label = Coordinate.uncertainty..m.)) +
-  geom_histogram(fill = 'cyan', color = 'black') +
+uncertcoord_hist = ggplot(data, aes(x = Coordinate.uncertainty..m.)) +
+  geom_histogram(aes(fill = after_stat(count)), color = 'black') +
+  scale_fill_continuous(low = 'cyan4', high = 'cyan', guide = 'none') +
+  scale_y_continuous(limits = c(0, 225000)) +
   ggtitle("Uncertainty histogram") +
   labs(x = "Uncertainty (m)", y = "Count") +
   theme(plot.title = element_text(hjust = 0.5))
@@ -171,7 +179,9 @@ data_biguncert = data[-which((data$Coordinate.uncertainty..m.)>10000),]
 removed_biguncert = round((nrow(data)-nrow(data_biguncert))/nrow(data)*100, 2)
 
 smalluncertcoord_hist = ggplot(data_biguncert, aes(x = Coordinate.uncertainty..m.)) +
-  geom_histogram(fill = 'cyan', color = 'black') +
+  geom_histogram(aes(fill = after_stat(count)), color = 'black') +
+  scale_fill_continuous(low = 'cyan4', high = 'cyan', guide = 'none') +
+  scale_y_continuous(limits = c(0, 225000)) +
   labs(x = "Uncertainty (m)", y = "Count") +
   ggtitle("Filtered uncertainties histogram",
           subtitle = paste('Less than 10km:', as.character(removed_biguncert), '% samples removed')) +
@@ -184,7 +194,7 @@ rm(data_biguncert, removed_biguncert)
 taxonrank_hist = ggplot(data, aes(x = Taxon.Rank)) +
   geom_bar(fill = 'green4', color = 'black') +
   geom_text(stat='count',
-            aes(label=..count..),
+            aes(label = after_stat(count)),
             vjust=-0.25) +
   labs(x = 'Taxon rank',
        y = 'Count') +
