@@ -167,19 +167,21 @@ latlong_hist = ggarrange(latcoord_hist, longcoord_hist,
 
 ### Coordinate uncertainty histogram ----
 uncertcoord_hist = ggplot(data, aes(x = Coordinate.uncertainty..m.)) +
-  geom_histogram(aes(fill = after_stat(count)), color = 'black') +
+  geom_histogram(aes(fill = after_stat(count)), color = 'black', binwidth = 500) +
   scale_fill_continuous(low = 'cyan4', high = 'cyan', guide = 'none') +
   scale_y_continuous(limits = c(0, 225000)) +
-  ggtitle("Uncertainty histogram") +
+  ggtitle("Uncertainty histogram",
+          subtitle = 'All samples') +
   labs(x = "Uncertainty (m)", y = "Count") +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
 
 # Remove large uncertainties
 data_biguncert = data[-which((data$Coordinate.uncertainty..m.)>10000),]
 removed_biguncert = round((nrow(data)-nrow(data_biguncert))/nrow(data)*100, 2)
 
 smalluncertcoord_hist = ggplot(data_biguncert, aes(x = Coordinate.uncertainty..m.)) +
-  geom_histogram(aes(fill = after_stat(count)), color = 'black') +
+  geom_histogram(aes(fill = after_stat(count)), color = 'black', binwidth = 500) +
   scale_fill_continuous(low = 'cyan4', high = 'cyan', guide = 'none') +
   scale_y_continuous(limits = c(0, 225000)) +
   labs(x = "Uncertainty (m)", y = "Count") +
