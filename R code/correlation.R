@@ -39,11 +39,11 @@ colnames(weekly_data)[-(1:4)] = sub(" ", "_", levels(data$Order))
 rm(weekly_counts, order_reshaped)
 
 ## Calculate correlations ----
-order_cor_melt = weekly_data[,-c(1:4, 12)] %>% cor(method = 'spearman') %>% melt
+order_cor_melt = weekly_data[-(1:213),-c(1:4, 12)] %>% cor(method = 'spearman') %>% melt
 
-order_cor_melt_subset = weekly_data[,-c(1:4, 7, 9, 12:14)] %>% cor(method = 'spearman') %>% melt
+order_cor_melt_subset = weekly_data[-(1:213),-c(1:4, 7, 9, 12:14)] %>% cor(method = 'spearman') %>% melt
 
-orderdiver_cor_melt = weekly_data[,-c(1, 3:4, 7, 9, 12:14)] %>% cor(method = 'spearman') %>% melt
+orderdiver_cor_melt = weekly_data[-(1:213),-c(1, 3:4, 7, 9, 12:14)] %>% cor(method = 'spearman') %>% melt
 
 # Plots ----
 ## Illustrative plots ----
