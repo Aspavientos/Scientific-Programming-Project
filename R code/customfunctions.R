@@ -4,6 +4,14 @@
 # Last edited: 10/10/2023
 
 # Packages ----
+if(!require('grDevices', quietly = TRUE)){
+  install.packages('grDevices')
+}if(!require('dplyr', quietly = TRUE)){
+  install.packages('dplyr')
+}if(!require('reshape2', quietly = TRUE)){
+  install.packages('reshape2')
+}
+
 require(grDevices)
 require(dplyr)
 require(reshape2)

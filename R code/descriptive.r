@@ -5,7 +5,7 @@
 # Last edited: 15/10/2023
 
 # Loading  ----
-## Load packacges ----
+## Load packages ----
 require(ggplot2)
 require(dplyr)
 require(ggpubr)
